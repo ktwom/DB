@@ -1,11 +1,11 @@
 <?php
 
-namespace GouuseCore\BaseMysql;
+namespace BaseMysql;
 
 
 /**
  * Class BaseMysql
- * @package GouuseCore\BaseMysql
+ * @package BaseMysql
  * mysql 基本处理
  * author ChenJun
  */
