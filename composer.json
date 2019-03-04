@@ -1,0 +1,12 @@
+{
+    "name": "basemysql/db",
+    "description": "This is mysqli for php simple option",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "JanChan",
+            "email": "1262048944@qq.com"
+        }
+    ],
+    "require": {}
+}
