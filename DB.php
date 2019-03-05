@@ -1,6 +1,6 @@
 <?php
 
-namespace GouuseCore\BaseMysql;
+namespace BaseMysql\DB;
 
 
 /**
