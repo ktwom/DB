@@ -5,8 +5,8 @@ namespace BaseMysql\DB;
 
 /**
  * Class BaseMysql
- * @package GouuseCore\BaseMysql
- * mysql 基本处理
+ * @package BaseMysql\DB
+ * php7 mysqli 基本处理
  * author ChenJun
  */
 class DB
