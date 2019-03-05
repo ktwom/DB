@@ -1,11 +1,11 @@
 <?php
 
-namespace BaseMysql;
+namespace GouuseCore\BaseMysql;
 
 
 /**
  * Class BaseMysql
- * @package BaseMysql
+ * @package GouuseCore\BaseMysql
  * mysql 基本处理
  * author ChenJun
  */
@@ -518,6 +518,7 @@ class DB
         $add = $this->doFilterMulti($data);
         if ($add) {
             try {
+                mysqli_query($this->link, "set global sql_mode= '';");
                 $res = mysqli_query($this->link, $add);
                 if (!$res)
                     $this->ErrorMsg('sql error');
@@ -699,12 +700,13 @@ class DB
      */
     protected function ErrorMsg($msg = '数据库操作失败')
     {
-        $arr['code'] = 500;
+        $arr['code'] = 501;
         $arr['sql'] = $this->getLastSql();
         $arr['error'] = $this->link->error;
         $arr['msg'] = $msg;
         $arr['data_base'] = $this->database;
         $arr['table'] = $this->real_table;
+        $arr['debug']['sql_count'] = 1;
         header("Content-Type:text/html;charset=UTF-8");
         exit(json_encode($arr, JSON_UNESCAPED_UNICODE));
     }
