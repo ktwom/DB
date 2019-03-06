@@ -1,11 +1,11 @@
-#数据库BaseMysql 
+# 数据库BaseMysql 
 支持跨库操作,DB类：
 ```php
 use BaseMysql\DB;
 //指定数据库操作
 $db = new DB('base_form');
 ```
-#查询示例:where条件
+# 查询示例:where条件
 ```php
 $where['a.id'] = 1;
 $where['field']=['>',2];
@@ -22,7 +22,7 @@ $db->table('table_name')->limit(0,20)->select();
 groupBy And having:
 $db->table('table_name')->where($where)->groupBy('id')->having('status > 2')->select();
 ```
-#删除
+# 删除
 需要提供有效的where条件才能删除成功
 ```php
 $where['form_id']=1;
@@ -32,7 +32,7 @@ if($res)
 else
     echo '删除失败';
 ```
-#插入
+# 插入
 ```php
 $data['user_name']='Janchan';
 $data['user_email']='767903684@qq.com';
@@ -46,17 +46,17 @@ for($i=0;$i+=1;$i<6){
 //返回true or flase
 $res=$db->table('user_data')->add($alldata);
 ```
-#获取最后一次执行SQL
+# 获取最后一次执行SQL
 ```php
 //返回 sql语句
 $db->getLastSql();
 ```
-#获取Explain
+# 获取Explain
 ```php
 //返回mysql Explain结果数组
 $db->getExplain();
 ```
-#getErrorMsg获取错误信息
+# getErrorMsg获取错误信息
 ```php
 $db->getErrorMsg();
 ```
