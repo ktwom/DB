@@ -1,4 +1,5 @@
-#数据库BaseMysql 支持跨库操作,DB类：
+#数据库BaseMysql 
+支持跨库操作,DB类：
 ```php
 use BaseMysql\DB;
 //指定数据库操作
