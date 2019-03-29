@@ -1,12 +1,12 @@
 <?php
 
-namespace BaseMysql\DB;
+namespace GouuseCore\BaseMysql;
 
 
 /**
  * Class BaseMysql
- * @package BaseMysql\DB
- * php7 mysqli 基本处理
+ * @package GouuseCore\BaseMysql
+ * mysqli 基本处理
  * author ChenJun
  */
 class DB
@@ -78,6 +78,7 @@ class DB
             if (!$database)
                 $database = env('DB_DATABASE');
             $Link = mysqli_connect(env('DB_HOST'), env('DB_USERNAME'), env('DB_PASSWORD'), $database, env('DB_PORT'));
+            mysqli_set_charset($Link, 'utf8');
             return $Link;
         } catch (\Exception $e) {
             return $e->getMessage();
@@ -111,6 +112,7 @@ class DB
         $password = env('DB_PASSWORD', 'root');
         $this->port = env('DB_PORT', 3306);
         $this->link = mysqli_connect($this->host, $this->user, $password, $this->database, (int)$this->port ?? 3306);
+        mysqli_set_charset($this->link, 'utf8');
         if (!$this->link) {
             $this->ErrorMsg(mysqli_connect_error());
         }
@@ -462,13 +464,20 @@ class DB
                 $sign = $w_v[0];
                 $w_v = $w_v[1];
             }
+            if (is_string($w_v) && strpos($w_v, "'") !== false)
+                $w_v = addslashes($w_v);
             if (in_array($sign, ['between', 'in', 'not in'])) {
-                if (empty($w_v) || !is_array($w_v))
-                    continue;
-                if ($sign == 'between')
-                    $w_v = $w_v[0] . ' AND ' . $w_v[1];
-                else
-                    $w_v = '(' . implode(',', $w_v) . ')';
+                if ($sign == 'between') {
+                    if (empty($w_v) || !is_array($w_v))
+                        $w_v = ' 0 AND 0 ';
+                    else
+                        $w_v = $w_v[0] ?? 0 . ' AND ' . $w_v[1] ?? 0;
+                } else {
+                    if (empty($w_v) || !is_array($w_v))
+                        $w_v = '()';
+                    else
+                        $w_v = '(' . implode(',', $w_v) . ')';
+                }
             } else {
                 if (in_array($sign, ['=', '>', '<', '<>', '!=', 'like', 'regexp'])) {
                     if ($sign == 'like')
@@ -499,7 +508,7 @@ class DB
                 if (!$res)
                     $this->ErrorMsg('sql error');
                 $this->insert_id = mysqli_insert_id($this->link);
-                return $this->insert_id;
+                return $this->insert_id ? $this->insert_id : true;
             } catch (\Exception $e) {
                 $this->ErrorMsg($e->getMessage());
             }
@@ -616,8 +625,10 @@ class DB
         $fields = $this->getField();
         $need_update = [];
         foreach ($fields as $field) {
-            if ($field == $this->pri || !isset($data[$field]) || (empty($data[$field]) && $data[$field] !== 0))
+            if ($field == $this->pri || !isset($data[$field]))
                 continue;
+            if (strpos($data[$field], "'") !== false)
+                $data[$field] = addslashes($data[$field]);
             $need_update[] = $field . '=' . "'" . $data[$field] . "'";
         }
         if (empty($need_update))
@@ -638,11 +649,13 @@ class DB
         $need_add = [];
         $in_field = [];
         foreach ($fields as $field) {
-            if ($field == $this->pri || !isset($data[$field]))
+            if (!isset($data[$field]))
                 continue;
             $in_field[] = $field;
             if (is_array($data[$field]))
                 $data[$field] = json_encode($data[$field], JSON_UNESCAPED_UNICODE);
+            if (strpos($data[$field], "'") !== false)
+                $data[$field] = addslashes($data[$field]);
             $need_add[] = "'" . $data[$field] . "'";
         }
         $some = array_filter($need_add);
@@ -679,6 +692,8 @@ class DB
                     $des[$fd] = '';
                 if (is_array($des[$fd]))
                     $des[$fd] = json_encode($des[$fd], JSON_UNESCAPED_UNICODE);
+                if (strpos($des[$fd], "'") !== false)
+                    $des[$fd] = addslashes($des[$fd]);
                 $need_add[] = "'" . $des[$fd] . "'";
             }
             if (empty(array_filter($need_add)))
@@ -707,7 +722,7 @@ class DB
         $arr['data_base'] = $this->database;
         $arr['table'] = $this->real_table;
         $arr['debug']['sql_count'] = 1;
-        header("Content-Type:text/html;charset=UTF-8");
+        header("Content-Type:application/json;charset=UTF-8");
         exit(json_encode($arr, JSON_UNESCAPED_UNICODE));
     }
 
