@@ -43,6 +43,8 @@ class DB
 
     protected $fields = [];
 
+    protected $FieldInfo = [];
+
     protected $insert_id = 0;
 
     protected $leftJoin = '';
@@ -340,10 +342,13 @@ class DB
             $t = $table;
         $sql = "show columns from {$t}";
         $res = $this->link->query($sql)->fetch_all();
+        $arr = [];
         foreach ($res as $f_v) {
+            $arr[$f_v[0]] = $f_v;
             if ($f_v[3] == 'PRI')
                 $this->pri = $f_v[0];
         }
+        $this->FieldInfo = $arr;
         if ($res)
             $res = array_column($res, 0);
         $this->fields = $res;
@@ -650,7 +655,7 @@ class DB
         $in_field = [];
         foreach ($fields as $field) {
             if (!isset($data[$field]))
-                continue;
+                $data[$field]=$this->getDefaultValue($field);
             $in_field[] = $field;
             if (is_array($data[$field]))
                 $data[$field] = json_encode($data[$field], JSON_UNESCAPED_UNICODE);
@@ -666,6 +671,25 @@ class DB
         $sql = "insert into {$this->table} ({$in_field}) values ({$need_add})";
         $this->last_sql = $sql;
         return $sql;
+    }
+
+    /**
+     * @param string $field
+     * @return int|mixed|string
+     */
+    public function getDefaultValue(string $field)
+    {
+        if (!$this->FieldInfo || !isset($this->FieldInfo[$field]))
+            return '';
+        $Info = $this->FieldInfo[$field];
+        if (isset($Info[4]) && $Info[4] !== '')
+            return $Info[4];
+        $type = strtolower((string)$Info[1]);
+        if (strpos($type, 'int') !== false)
+            return 0;
+        elseif (strpos($type, 'double') !== false || strpos($type, 'float') !== false || strpos($type, 'decimal') !== false)
+            return 0;
+        return '';
     }
 
 
@@ -689,7 +713,7 @@ class DB
             $need_add = [];
             foreach ($in_field as $fd) {
                 if (!isset($des[$fd]))
-                    $des[$fd] = '';
+                    $des[$fd] = $this->getDefaultValue($fd);
                 if (is_array($des[$fd]))
                     $des[$fd] = json_encode($des[$fd], JSON_UNESCAPED_UNICODE);
                 if (strpos($des[$fd], "'") !== false)
